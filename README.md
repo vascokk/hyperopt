@@ -42,7 +42,7 @@ The model itself will be a feed-forward MLP neural network taken straight from t
 
 First, we crate a function that will initialize each individual:
 
-```code: python
+```python
 
 def rnd_lr(min, max):
     a = int(math.log10(min))
@@ -66,7 +66,7 @@ Starting with the last line: we define the population as a list of "model" eleme
 
 3. Define the "evaluation" function. This is a function which returns the "fitness" of the individual. In our case that could be the value of the model's "accuracy" or "loss"
 
-```code: python
+```python
 
 def eval_individual(ind):
     model = NnModel(ind.value)
@@ -80,7 +80,7 @@ The `evaluate()` function we created above will be used by the GA algorithm inte
 
 4. Define the "mutation" function. This is a function which, given an individual, returns a new individual where the value of the parameter we want to optimize is changed. In our case - a new model with a new value for the Learning Rate
 
-```code: python
+```python
 
 def mutate_individual(_ind):
     new_lr = toolbox.attr_lr()
@@ -96,7 +96,7 @@ To keep the exmple even more simple, I'll just do lr1-lr2 for the first and lr1+
 
 The mutation function in the toolbox is called "mate":
 
-```code: python
+```python
 def crossover_individuals(ind1, ind2):
     return creator.Individual(abs(ind1.value-ind2.value)), creator.Individual(ind1.value+ind2.value)
 
@@ -105,7 +105,7 @@ toolbox.register("mate", crossover_individuals)
 
 6. Define the "select" function. This function encapsulates the selection strategy for the individuals used as parents of the next generation:
 
-```code: python
+```python
 toolbox.register("select", tools.selBest)
 ```
 
@@ -113,7 +113,7 @@ We are using the built-in function `selBest`, but you can replace it with your o
 
 There are only two things left - the HallOfFame, which will keep our best result and the Statistics object, which will print some useful stats:
 
-``` code: python
+```python
 hof = tools.HallOfFame(1)  # keeps only one (the best) result
 
 stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -127,7 +127,7 @@ stats.register("max", np.max, axis=0)
 
 Wth all this done, we can create the first population and call one of the built in GA algorithms:
 
-``` code: python
+```python
 pop = toolbox.population(n=10)  # 10 individuals per population
 algorithms.eaSimple(pop, toolbox, CXPB, MUTPB, NGEN, stats=stats, halloffame=hof, verbose=__debug__)
 
@@ -140,7 +140,7 @@ Now, we are evaluating neural networks here, which is a computationally demandin
 `toolbox.map` defines how the evaluation is apllied to the population's individuals.
 Within eaSimple, the map does the following:
 
-``` code: python
+```python
 fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
 
 # and it is registered as:
@@ -151,7 +151,7 @@ self.register("map", map)
 So, in the standalone version, it just calls the `evaluate()` for each individual in the population.
 In the distributed version, we are going to parallelize the population and apply the `evaluate()` function on each partition:
 
-```code: python
+```python
 
 def sparkMap(eval_func, population):
     return sc.parallelize(population).map(eval_func).collect()
