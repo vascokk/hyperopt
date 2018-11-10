@@ -53,11 +53,10 @@ def main():
     toolbox.register("init_individual", init_individual, creator.Individual, lr=toolbox.attr_lr)
     toolbox.register("population", tools.initRepeat, list, toolbox.init_individual)
 
-
     toolbox.register("evaluate", eval_individual)
     toolbox.register("mate", crossover_individuals)
     toolbox.register("mutate", mutate_individual)
-    toolbox.register("select", tools.selTournament, tournsize=1)  # needs to be k<= len(population)
+    toolbox.register("select", tools.selBest)
 
     appName = 'Genetic Evolution'
     conf = SparkConf().setAppName(appName).setMaster("local")
@@ -67,14 +66,13 @@ def main():
     sc = SparkContext(conf=conf).getOrCreate()
     sc.setLogLevel('DEBUG')
 
-    def sparkMap(algorithm, population):
-        return sc.parallelize(population).map(algorithm).collect()
+    def sparkMap(eval_func, population):
+        return sc.parallelize(population).map(eval_func).collect()
 
 
     toolbox.register("map", sparkMap)
 
     hof = tools.HallOfFame(1)
-    pop = toolbox.population(n=8)
 
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("avg", np.mean, axis=0)
@@ -82,15 +80,17 @@ def main():
     stats.register("min", np.min, axis=0)
     stats.register("max", np.max, axis=0)
 
+    pop = toolbox.population(n=8)
     algorithms.eaSimple(pop, toolbox, CXPB, MUTPB, NGEN, stats=stats, halloffame=hof, verbose=__debug__)
 
 
     print(pop)
     print(stats)
 
-    print("HoF ======================= :")
+    print("======================= Hall Of Fame =======================")
     print("Best LR:", hof.items[0].value)
     print("Best score:", hof.keys[0].values[0])
+    print("============================================================")
 
     return hof.items[0].value, hof.keys[0].values[0]
 
