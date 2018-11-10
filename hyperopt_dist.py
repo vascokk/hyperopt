@@ -61,14 +61,11 @@ def main():
     appName = 'Genetic Evolution'
     conf = SparkConf().setAppName(appName).setMaster("local")
 
-    SparkContext.setSystemProperty('spark.rpc.message.maxSize', '2000')
-
     sc = SparkContext(conf=conf).getOrCreate()
     sc.setLogLevel('DEBUG')
 
     def sparkMap(eval_func, population):
         return sc.parallelize(population).map(eval_func).collect()
-
 
     toolbox.register("map", sparkMap)
 
