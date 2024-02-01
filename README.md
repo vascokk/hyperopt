@@ -1,5 +1,5 @@
 # hyperopt
-Using Evolutionary algorithms and Apache Spark for hyperparameter optimization of Keras/TensorFlow models
+Using Genetic algorithms and Apache Spark for hyperparameter optimization of Keras/TensorFlow models
 
 
 When you build a model with Keras, one question you need to answer, unless it is for a well known problem and dataset, is "What values for the hyperparameters to use?". By hyperparameters, of course I mean things like "learning rate", "dropout ratio", "regularization coefficient", etc.
